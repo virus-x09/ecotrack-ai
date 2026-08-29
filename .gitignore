@@ -1,5 +1,45 @@
-.venv/
+# Environment files (NEVER COMMIT THESE)
 .env
-*.db
+.env.*.local
+
+# Python virtual environment
+.venv/
+venv/
+ENV/
+env/
+
+# Python cache
 __pycache__/
+*.py[cod]
+*.so
+
+# Database files (if local development DBs)
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker
+docker/volumes/
+.dockerignore
+
+# Uploads and large media files (if any)
 uploads/
+media/
+
+# Logs
+*.log
+logs/
+
+# Node/npm (if any frontend dependencies)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor settings (JetBrains, VS Code, etc.)
+.idea/
+.vscode/
+*.swp
+
+# OS-specific
+.DS_Store
