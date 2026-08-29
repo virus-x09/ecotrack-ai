@@ -1,0 +1,78 @@
+.location-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: -3px 0 14px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.location-actions {
+  display: flex;
+  gap: 6px;
+}
+.location-button {
+  border: 1px solid #bde5d1;
+  background: #f5fbf7;
+  color: var(--green);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font:
+    600 11px "DM Sans",
+    sans-serif;
+  cursor: pointer;
+}
+.location-button:hover {
+  background: var(--mint);
+}
+#map {
+  z-index: 0;
+}
+.leaflet-container {
+  font-family: "DM Sans", sans-serif;
+}
+.leaflet-popup-content {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.table-action {
+  border: 1px solid #bde5d1;
+  background: #f5fbf7;
+  color: var(--green);
+  border-radius: 6px;
+  padding: 6px 9px;
+  font:
+    600 11px "DM Sans",
+    sans-serif;
+  cursor: pointer;
+}
+.table-action:hover {
+  background: var(--mint);
+}
+.map-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.view-360 {
+  border: 1px solid #bde5d1;
+  background: #f5fbf7;
+  color: var(--green);
+  border-radius: 6px;
+  padding: 7px 10px;
+  text-decoration: none;
+  font:
+    600 11px "DM Sans",
+    sans-serif;
+}
+.view-360:hover {
+  background: var(--mint);
+}
+.student-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  background: #2478ff;
+  border-radius: 50%;
+  margin: 0 5px 0 10px;
+}

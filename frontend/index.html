@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EcoTrack AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="auth.css">
+  <link rel="stylesheet" href="location.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="collector.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+  <!-- Intro / Auth Mode -->
+  <!-- Intro / Auth Mode -->
+  <div id="login-screen" class="login-screen intro-mode">
+    <div class="login-box">
+      
+      <div class="auth-nav">
+        <div class="auth-icon-btn" id="auth-back-btn"><i class="fa-solid fa-arrow-left"></i></div>
+        <div class="auth-icon-btn"><i class="fa-solid fa-arrows-rotate"></i></div>
+      </div>
+
+      <div class="orb-container">
+        <div class="auth-orb"></div>
+      </div>
+
+      <div class="auth-header-wrapper">
+        <h2 id="auth-title">Create Your Account?</h2>
+        <p id="auth-subtitle">Create your account to explore exciting travel destinations and adventures.</p>
+      </div>
+
+      <form id="auth-form" class="auth-form">
+        <input type="hidden" id="auth-mode" value="register">
+
+        <!-- Full Name -->
+        <div class="input-group" id="group-name">
+          <label>Full Name*</label>
+          <div class="input-wrapper">
+            <input id="auth-name" type="text" placeholder="Alex Smith" autocomplete="name">
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="input-group" id="group-email">
+          <label>Email address*</label>
+          <div class="input-wrapper">
+            <input id="auth-email" type="email" placeholder="example@gmail.com" autocomplete="email" required>
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="input-group" id="group-password">
+          <label>Password*</label>
+          <div class="input-wrapper has-right-icon">
+            <input id="auth-password" type="password" placeholder="@Sn123hsn#" autocomplete="new-password" minlength="5" required>
+            <i class="fa-regular fa-eye-slash toggle-password" id="toggle-password"></i>
+          </div>
+        </div>
+
+        <!-- OTP -->
+        <div class="input-group" id="group-otp" hidden>
+          <label>OTP*</label>
+          <div class="input-wrapper">
+            <input id="auth-otp" type="text" placeholder="Enter 6-digit OTP" minlength="6" maxlength="6" autocomplete="one-time-code">
+          </div>
+        </div>
+
+        <!-- Captcha -->
+        <div class="input-group" id="group-captcha">
+          <label id="captcha-question" style="display:flex; justify-content:space-between">Loading... <a href="#" id="refresh-captcha" style="color:var(--neon-lime)"><i class="fa-solid fa-arrows-rotate"></i></a></label>
+          <div class="input-wrapper">
+            <input id="auth-captcha-answer" type="text" placeholder="Captcha Answer" required>
+          </div>
+        </div>
+
+        <!-- Actions row (Remember me / Forgot password) -->
+        <div class="form-actions-row">
+          <label class="checkbox-wrap" id="remember-me-wrap">
+            <input type="checkbox" checked>
+            Remember me
+          </label>
+          <a href="#" class="forgot-link" id="link-forgot">Forgot Password?</a>
+        </div>
+
+        <!-- Submit Button -->
+        <button id="auth-submit-btn" class="primary-button neon-btn" type="submit">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> <span id="auth-btn-text">Register</span>
+        </button>
+
+        <p class="form-message" id="auth-message" role="status"></p>
+
+        <!-- Bottom Links -->
+        <div class="auth-links-bottom">
+          <p id="bottom-text">Already have an account? <a href="#" id="link-login">Sign In</a></p>
+          <a href="#" id="link-register" hidden>Sign up</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+    <!-- Main Dashboard View -->
+  <div id="app-wrapper" hidden>
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <a href="#" class="sidebar-brand">
+        <div class="sidebar-brand-icon"><i class="fa-solid fa-leaf"></i></div>
+        <div class="sidebar-brand-text">
+          <span>EcoTrack AI</span>
+          <span class="subtitle">ACTION LEDGER</span>
+        </div>
+      </a>
+
+      <span class="nav-section-title">NAVIGATE</span>
+      <nav class="sidebar-nav">
+        <a href="#" class="active"><i class="fa-solid fa-chart-line"></i> Overview</a>
+        <a href="#"><i class="fa-regular fa-rectangle-list"></i> Report queue</a>
+        <a href="#"><i class="fa-regular fa-file-lines"></i> New report</a>
+        <a href="#"><i class="fa-solid fa-users"></i> Collection team</a>
+        <a href="#"><i class="fa-solid fa-chart-area"></i> Activity</a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="system-pulse">
+          <div class="pulse-dot"></div>
+          <div>
+            <strong style="color:#fff;display:block">System pulse</strong>
+            All signals operational
+          </div>
+        </div>
+        <div class="user-profile">
+          <div class="user-avatar">AM</div>
+          <div class="user-info">
+            <span class="name">Alex Morgan</span>
+            <span class="workspace">Demo workspace</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="breadcrumbs">
+          WORKSPACE &nbsp;&gt;&nbsp; <span>Admin view</span>
+        </div>
+        <div class="role-toggle">
+          <button class="active">Citizen</button>
+          <button>Collector</button>
+          <button style="padding:6px;width:32px"><i class="fa-solid fa-mobile-screen"></i></button>
+          <button style="padding:6px;width:32px"><i class="fa-solid fa-gear"></i></button>
+          <button id="logout" style="display:none;">Logout</button>
+        </div>
+      </header>
+
+      <!-- PAGE HEADER -->
+      <section class="page-header">
+        <div class="page-eyebrow">COMMAND CENTER / LIVE</div>
+        <h1 class="page-title">Know the impact before the day ends.</h1>
+        <p class="page-subtitle">A single operating picture for every report, route, and verified cleanup.</p>
+        <button class="action-btn" id="focus-report"><i class="fa-solid fa-camera"></i> Report waste</button>
+      </section>
+
+      <!-- METRICS GRID -->
+      <section class="metric-grid">
+        <article class="metric-card">
+          <div class="metric-icon-wrap green">
+            <i class="fa-regular fa-file-lines"></i>
+          </div>
+          <div class="trend-badge positive"><i class="fa-solid fa-arrow-trend-up"></i> +12.4%</div>
+          <div class="metric-label">TOTAL REPORTS</div>
+          <div class="metric-value" id="total-reports">4</div>
+          <div class="metric-subtext">All time in this workspace</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-icon-wrap orange">
+            <i class="fa-regular fa-clock"></i>
+          </div>
+          <div class="metric-label">NEEDS ATTENTION</div>
+          <div class="metric-value" id="pending-reports">1</div>
+          <div class="metric-subtext">Reported or assigned</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-icon-wrap green">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <div class="trend-badge positive"><i class="fa-solid fa-arrow-trend-up"></i> +8.1%</div>
+          <div class="metric-label">VERIFIED CLEANUPS</div>
+          <div class="metric-value" id collector-reports>3</div>
+          <div class="metric-subtext">Evidence approved</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-icon-wrap green">
+            <i class="fa-solid fa-box"></i>
+          </div>
+          <div class="trend-badge positive"><i class="fa-solid fa-arrow-trend-up"></i> +5.7%</div>
+          <div class="metric-label">PLASTIC DIVERTED</div>
+          <div class="metric-value" id="verified-rate">55.2</div>
+          <div class="metric-subtext">kg (75% cleanup rate)</div>
+        </article>
+      </section>
+
+      <!-- BOTTOM PANELS -->
+      <section class="bottom-grid">
+        
+        <!-- The work, at a glance -->
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">The work, at a glance</h2>
+              <p class="panel-subtitle">Each report moves through a visible chain of action.</p>
+            </div>
+            <a href="#" class="panel-link">View queue &gt;</a>
+          </div>
+          <div class="flow-stages">
+            <div class="flow-stage">ASSIGNED <span>1</span><div class="line"></div></div>
+            <div class="flow-stage">VERIFIED <span>3</span><div class="line"></div></div>
+          </div>
+          <div id="map"></div>
+        </article>
+
+        <!-- Live activity -->
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Live activity</h2>
+              <p class="panel-subtitle">What changed most recently.</p>
+            </div>
+            <a href="#" class="panel-link">See all</a>
+          </div>
+          <!-- Activity placeholders -->
+          <div style="margin-top:24px;display:flex;gap:12px">
+            <div class="metric-icon-wrap orange" style="width:32px;height:32px;margin:0"><i class="fa-solid fa-bolt"></i></div>
+            <div>
+              <div style="font-size:0.9rem;color:var(--text-main);font-weight:600">Rahul Verma was assigned to Mixed waste</div>
+              <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px">13H AGO</div>
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Hidden Report Form for JS -->
+  <article class="panel report-panel" id="report-panel" hidden>
+    <div class="panel-heading">
+      <h2>Report plastic waste</h2>
+    </div>
+    <form id="report-form">
+      <label class="upload-box" for="image"><span>Choose a photo</span><input id="image" name="image" type="file" required /></label>
+      <input id="latitude" name="latitude" type="number" step="any" required />
+      <input id="longitude" name="longitude" type="number" step="any" required />
+      <button id="locate" type="button">Locate</button>
+      <button type="submit" id="submit-btn">Submit</button>
+    </form>
+  </article>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
