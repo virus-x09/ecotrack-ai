@@ -74,13 +74,7 @@
           </div>
         </div>
 
-        <!-- Captcha -->
-        <div class="input-group" id="group-captcha">
-          <label id="captcha-question" style="display:flex; justify-content:space-between">Loading... <a href="#" id="refresh-captcha" style="color:var(--neon-lime)"><i class="fa-solid fa-arrows-rotate"></i></a></label>
-          <div class="input-wrapper">
-            <input id="auth-captcha-answer" type="text" placeholder="Captcha Answer" required>
-          </div>
-        </div>
+
 
         <!-- Actions row (Remember me / Forgot password) -->
         <div class="form-actions-row">
@@ -88,7 +82,11 @@
             <input type="checkbox" checked>
             Remember me
           </label>
-          <a href="#" class="forgot-link" id="link-forgot">Forgot Password?</a>
+          <div style="display:flex; gap:12px">
+            <a href="#" class="forgot-link" id="link-login-otp">Login with OTP</a>
+            <a href="#" class="forgot-link" id="link-login-password" hidden>Login with Password</a>
+            <a href="#" class="forgot-link" id="link-forgot">Forgot Password?</a>
+          </div>
         </div>
 
         <!-- Submit Button -->

@@ -1,7 +1,7 @@
 // Determine API URL based on environment
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-// TODO: Replace the production URL below with your actual deployed backend URL (e.g., from Render)
-const API_URL = isLocal ? "http://127.0.0.1:8000" : "https://your-backend-app.onrender.com";
+// In Vercel, the API is available at the same domain under /api
+const API_URL = isLocal ? "http://127.0.0.1:8000" : "/api";
 let reports = [];
 let accessToken = localStorage.getItem("ecotrack_token");
 let currentUser = null;
@@ -762,3 +762,16 @@ setTimeout(() => {
   const intro = document.getElementById("intro");
   if (intro) intro.style.display = "none";
 }, 6200);
+
+// Password Visibility Toggle Logic
+const togglePassword = document.getElementById('toggle-password');
+const passwordInput = document.getElementById('auth-password');
+
+if (togglePassword && passwordInput) {
+  togglePassword.addEventListener('click', function () {
+    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordInput.setAttribute('type', type);
+    this.classList.toggle('fa-eye');
+    this.classList.toggle('fa-eye-slash');
+  });
+}

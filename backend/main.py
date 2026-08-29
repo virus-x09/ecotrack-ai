@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 from enum import Enum
+from datetime import datetime, timezone
+from enum import Enum
 import os
 from pathlib import Path
 from typing import Optional
@@ -9,6 +11,7 @@ import time
 import json
 import urllib.request
 import urllib.error
+import requests
 
 from fastapi import FastAPI, File, Form, Header, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -155,11 +158,18 @@ def generate_captcha() -> dict[str, str]:
         
     return {"captcha_id": captcha_id, "question": f"What is {num1} {op} {num2}?"}
 
-UPLOADS_DIR = Path(os.getenv("ECOTRACK_UPLOADS_DIR", "uploads"))
-REPORTS_DIR = UPLOADS_DIR / "reports"
-EVIDENCE_DIR = UPLOADS_DIR / "evidence"
-REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
+def upload_to_vercel_blob(filename: str, file_bytes: bytes) -> str:
+    token = os.getenv("BLOB_READ_WRITE_TOKEN")
+    if not token:
+        raise HTTPException(status_code=500, detail="Vercel Blob token is missing")
+    url = f"https://blob.vercel-storage.com/{filename}"
+    headers = {
+        "authorization": f"Bearer {token}",
+    }
+    response = requests.put(url, headers=headers, data=file_bytes)
+    response.raise_for_status()
+    return response.json()["url"]
+
 init_db()
 
 for stored_user in load_users():
@@ -384,13 +394,13 @@ async def create_report(
         analysis = analyze_image(image_bytes, filename)
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
-    image_path = REPORTS_DIR / f"{uuid4().hex[:8]}-{filename}"
-    image_path.write_bytes(image_bytes)
+    blob_filename = f"reports/{uuid4().hex[:8]}-{filename}"
+    image_url = upload_to_vercel_blob(blob_filename, image_bytes)
 
     report = Report(
         report_id=f"rpt-{uuid4().hex[:8]}",
         user_id=user.user_id,
-        image_reference=str(image_path),
+        image_reference=image_url,
         latitude=latitude,
         longitude=longitude,
         description=description,
@@ -486,9 +496,9 @@ async def submit_evidence(
         if evidence.content_type not in {"image/jpeg", "image/png", "image/webp"}:
             raise HTTPException(status_code=400, detail="Evidence must be a JPEG, PNG, or WebP image")
         safe_name = Path(evidence.filename or "evidence").name
-        evidence_path = EVIDENCE_DIR / f"{report.report_id}-{safe_name}"
-        evidence_path.write_bytes(await evidence.read())
-        report.evidence_reference = str(evidence_path)
+        blob_filename = f"evidence/{report.report_id}-{safe_name}"
+        evidence_url = upload_to_vercel_blob(blob_filename, await evidence.read())
+        report.evidence_reference = evidence_url
     elif evidence_reference:
         report.evidence_reference = evidence_reference
     else:
@@ -540,6 +550,3 @@ def analytics(authorization: Optional[str] = Header(None)) -> dict[str, object]:
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 if FRONTEND_DIR.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
-if UPLOADS_DIR.exists():
-    app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
-
