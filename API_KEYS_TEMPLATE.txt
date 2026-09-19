@@ -1,0 +1,49 @@
+EcoTrack AI - Secure Configuration Template
+============================================
+
+This file contains variable names only. Replace placeholders in the local
+.env file or deployment secret manager. Do not paste real secrets here.
+
+# API keys and external services
+GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+ECOTRACK_AI_ENDPOINT=https://your-ai-service.example.com
+ECOTRACK_AGENT_WEBHOOK=https://your-agent.example.com/webhook
+BLOB_READ_WRITE_TOKEN=your-blob-storage-token
+
+# Application authentication
+ECOTRACK_AUTH_SECRET=replace-with-a-long-random-secret
+
+# Database
+POSTGRES_URL=postgresql://user:password@host:5432/database
+
+# SMTP notifications
+ECOTRACK_SMTP_HOST=smtp.example.com
+ECOTRACK_SMTP_PORT=587
+ECOTRACK_SMTP_USER=notifications@example.com
+ECOTRACK_SMTP_PASSWORD=your-smtp-password
+
+# Backend API Endpoints
+# GET /health
+# POST /image-compare
+# POST /auth/register
+# POST /auth/login
+# POST /auth/request-otp
+# POST /auth/forgot-password
+# POST /auth/verify-otp
+# POST /auth/reset-password
+# GET /auth/me
+# POST /reports
+# GET /reports/{report_id}
+# GET /collectors
+# GET /reports
+# PATCH /reports/{report_id}/status
+# POST /reports/{report_id}/assignment
+# POST /reports/{report_id}/evidence
+# POST /reports/{report_id}/verify
+# GET /analytics
+
+Security notes:
+- Keep real values in .env or a deployment secret manager.
+- Never commit .env, paste secrets into frontend files, or include them in logs.
+- Restrict provider keys to the required APIs, hosts, or server IPs.
+- Rotate any credential that has been exposed.

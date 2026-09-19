@@ -34,15 +34,15 @@
       </div>
 
       <div class="auth-header-wrapper">
-        <h2 id="auth-title">Create Your Account?</h2>
-        <p id="auth-subtitle">Create your account to explore exciting travel destinations and adventures.</p>
+        <h2 id="auth-title">Welcome Back!</h2>
+        <p id="auth-subtitle">Sign in to access smart, personalized travel plans made for you.</p>
       </div>
 
       <form id="auth-form" class="auth-form">
-        <input type="hidden" id="auth-mode" value="register">
+        <input type="hidden" id="auth-mode" value="login">
 
         <!-- Full Name -->
-        <div class="input-group" id="group-name">
+        <div class="input-group" id="group-name" style="display: none;">
           <label>Full Name*</label>
           <div class="input-wrapper">
             <input id="auth-name" type="text" placeholder="Alex Smith" autocomplete="name">
@@ -61,7 +61,7 @@
         <div class="input-group" id="group-password">
           <label>Password*</label>
           <div class="input-wrapper has-right-icon">
-            <input id="auth-password" type="password" placeholder="@Sn123hsn#" autocomplete="new-password" minlength="5" required>
+            <input id="auth-password" type="password" placeholder="@Sn123hsn#" autocomplete="current-password" minlength="5" required>
             <i class="fa-regular fa-eye-slash toggle-password" id="toggle-password"></i>
           </div>
         </div>
@@ -69,8 +69,9 @@
         <!-- OTP -->
         <div class="input-group" id="group-otp" hidden>
           <label>OTP*</label>
-          <div class="input-wrapper">
-            <input id="auth-otp" type="text" placeholder="Enter 6-digit OTP" minlength="6" maxlength="6" autocomplete="one-time-code">
+          <div class="input-wrapper" style="display:flex; gap: 8px;">
+            <input id="auth-otp" type="text" placeholder="Enter 6-digit OTP" minlength="6" maxlength="6" autocomplete="one-time-code" style="flex: 1;">
+            <button type="button" id="btn-send-otp" class="primary-button neon-btn" style="padding: 10px 16px; border-radius: 12px; font-size: 0.85rem; margin-top: 0; white-space: nowrap; box-shadow: none;">Send OTP</button>
           </div>
         </div>
 
@@ -91,15 +92,15 @@
 
         <!-- Submit Button -->
         <button id="auth-submit-btn" class="primary-button neon-btn" type="submit">
-          <span id="auth-btn-text">Register</span>
+          <span id="auth-btn-text">Sign in</span>
         </button>
 
         <p class="form-message" id="auth-message" role="status"></p>
 
         <!-- Bottom Links -->
         <div class="auth-links-bottom">
-          <p id="bottom-text">Already have an account? <a href="#" id="link-login">Sign In</a></p>
-          <a href="#" id="link-register" hidden>Sign up</a>
+          <p id="bottom-text">Don't have an account? <a href="#" id="link-register">Sign up</a></p>
+          <a href="#" id="link-login" hidden>Sign In</a>
         </div>
       </form>
     </div>
@@ -136,10 +137,10 @@
           </div>
         </div>
         <div class="user-profile">
-          <div class="user-avatar">AM</div>
+          <div class="user-avatar" id="sidebar-avatar">AM</div>
           <div class="user-info">
-            <span class="name">Alex Morgan</span>
-            <span class="workspace">Demo workspace</span>
+            <span class="name" id="sidebar-name">Alex Morgan</span>
+            <span class="workspace" id="sidebar-workspace">Demo workspace</span>
           </div>
         </div>
       </div>

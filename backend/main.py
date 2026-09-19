@@ -1,9 +1,9 @@
 from datetime import datetime, timezone
 from enum import Enum
-from datetime import datetime, timezone
-from enum import Enum
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()
 from typing import Optional
 from uuid import uuid4
 import secrets
@@ -13,7 +13,7 @@ import urllib.request
 import urllib.error
 import requests
 
-from fastapi import FastAPI, File, Form, Header, HTTPException, Request, UploadFile, status
+from fastapi import FastAPI, File, Form, Header, HTTPException, Request, UploadFile, status, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -21,7 +21,7 @@ from pydantic import BaseModel, Field
 from .ai_analyzer import analyze_image
 from .image_comparison import compare_image_bytes
 from .auth import create_token, decode_token, hash_password, verify_password
-from .database import find_user_by_email, init_db, load_reports, load_users, save_report, save_user, update_user_password
+from .database import find_user_by_email, init_db, load_reports, load_users, save_report, save_user, update_user_password, get_report_image_data, get_report_evidence_data
 from .location_service import google_geolocate, google_reverse_geocode
 from .ip_location import lookup_ip_location
 from .notifications import notify_report_created, notify_reporter, send_otp_email
@@ -136,39 +136,7 @@ app.add_middleware(
 users = {}
 reports: dict[str, Report] = {}
 otps: dict[str, dict[str, object]] = {}
-captchas: dict[str, dict[str, object]] = {}
 
-@app.get("/auth/captcha", response_model=dict[str, str])
-def generate_captcha() -> dict[str, str]:
-    import random
-    num1 = random.randint(1, 10)
-    num2 = random.randint(1, 10)
-    op = random.choice(["+", "-", "*"])
-    if op == "+": answer = str(num1 + num2)
-    elif op == "-": answer = str(num1 - num2)
-    else: answer = str(num1 * num2)
-    
-    captcha_id = f"cap-{uuid4().hex[:8]}"
-    captchas[captcha_id] = {"answer": answer, "expires": time.time() + 300}
-    
-    # cleanup expired captchas occasionally
-    expired = [cid for cid, data in captchas.items() if time.time() > data["expires"]]
-    for cid in expired:
-        del captchas[cid]
-        
-    return {"captcha_id": captcha_id, "question": f"What is {num1} {op} {num2}?"}
-
-def upload_to_vercel_blob(filename: str, file_bytes: bytes) -> str:
-    token = os.getenv("BLOB_READ_WRITE_TOKEN")
-    if not token:
-        raise HTTPException(status_code=500, detail="Vercel Blob token is missing")
-    url = f"https://blob.vercel-storage.com/{filename}"
-    headers = {
-        "authorization": f"Bearer {token}",
-    }
-    response = requests.put(url, headers=headers, data=file_bytes)
-    response.raise_for_status()
-    return response.json()["url"]
 
 init_db()
 
@@ -394,11 +362,11 @@ async def create_report(
         analysis = analyze_image(image_bytes, filename)
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
-    blob_filename = f"reports/{uuid4().hex[:8]}-{filename}"
-    image_url = upload_to_vercel_blob(blob_filename, image_bytes)
+    report_id = f"rpt-{uuid4().hex[:8]}"
+    image_url = f"/reports/{report_id}/image"
 
     report = Report(
-        report_id=f"rpt-{uuid4().hex[:8]}",
+        report_id=report_id,
         user_id=user.user_id,
         image_reference=image_url,
         latitude=latitude,
@@ -410,7 +378,7 @@ async def create_report(
         category=analysis["category"],
     )
     reports[report.report_id] = report
-    save_report(report)
+    save_report(report, image_data=image_bytes)
     
     notify_report_created(report.report_id, report.user_id)
     
@@ -492,18 +460,17 @@ async def submit_evidence(
     require_role(user.user_id, Role.collector)
     if report.collector_id != user.user_id or report.status != ReportStatus.collected:
         raise HTTPException(status_code=400, detail="Report is not ready for evidence submission")
+    evidence_bytes = None
     if evidence:
         if evidence.content_type not in {"image/jpeg", "image/png", "image/webp"}:
             raise HTTPException(status_code=400, detail="Evidence must be a JPEG, PNG, or WebP image")
-        safe_name = Path(evidence.filename or "evidence").name
-        blob_filename = f"evidence/{report.report_id}-{safe_name}"
-        evidence_url = upload_to_vercel_blob(blob_filename, await evidence.read())
-        report.evidence_reference = evidence_url
+        evidence_bytes = await evidence.read()
+        report.evidence_reference = f"/reports/{report.report_id}/evidence-image"
     elif evidence_reference:
         report.evidence_reference = evidence_reference
     else:
         raise HTTPException(status_code=400, detail="Upload evidence image or provide an evidence reference")
-    save_report(report)
+    save_report(report, evidence_data=evidence_bytes)
     return report
 
 
@@ -519,6 +486,21 @@ def verify_report(report_id: str, approved: bool, authorization: Optional[str] =
     if approved:
         notify_reporter(report.report_id, report.user_id, None)
     return report
+
+
+@app.get("/reports/{report_id}/image")
+def get_report_image(report_id: str):
+    image_data = get_report_image_data(report_id)
+    if not image_data:
+        raise HTTPException(status_code=404, detail="Image not found")
+    return Response(content=image_data, media_type="image/jpeg")
+
+@app.get("/reports/{report_id}/evidence-image")
+def get_report_evidence(report_id: str):
+    evidence_data = get_report_evidence_data(report_id)
+    if not evidence_data:
+        raise HTTPException(status_code=404, detail="Evidence image not found")
+    return Response(content=evidence_data, media_type="image/jpeg")
 
 
 @app.get("/analytics")

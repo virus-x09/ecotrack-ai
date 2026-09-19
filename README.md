@@ -83,8 +83,8 @@ The current prototype uses these demo identities through the `user_id` request f
 
 Demo login accounts for testing the complete workflow:
 
-- Administrator: `admin@ecotrack.local` / `admin12345`
-- Collector: `collector@ecotrack.local` / `collector123`
+- Administrator: `ecotrackaipwd@gmail.com` / `admin12345`
+- Collector: `digitalminddilip0906@gmail.com` / `dilip0906`
 
 ## Implemented API Surface
 

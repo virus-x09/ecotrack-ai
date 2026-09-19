@@ -1,7 +1,7 @@
-// Determine API URL based on environment
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const hostname = window.location.hostname;
+const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.');
 // In Vercel, the API is available at the same domain under /api
-const API_URL = isLocal ? "http://127.0.0.1:8000" : "/api";
+const API_URL = isLocal ? `http://${hostname}:8000` : "/api";
 let reports = [];
 let accessToken = localStorage.getItem("ecotrack_token");
 let currentUser = null;
@@ -16,9 +16,21 @@ const authHeaders = () =>
   accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
 const isGuest = () => Boolean(currentUser?.isGuest);
 
+function updateSidebarProfile(name) {
+  const avatarEl = document.getElementById("sidebar-avatar");
+  const nameEl = document.getElementById("sidebar-name");
+  
+  if (nameEl) nameEl.textContent = name;
+  if (avatarEl) {
+    const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    avatarEl.textContent = initials || 'G';
+  }
+}
+
 function enterGuestMode() {
   accessToken = null;
   currentUser = { name: "Guest", role: "citizen", isGuest: true };
+  updateSidebarProfile("Guest");
   byId("session-label").textContent = "Guest mode";
   byId("login").hidden = false;
   byId("logout").hidden = true;
@@ -381,6 +393,7 @@ async function restoreSession() {
     return;
   }
   currentUser = await response.json();
+  updateSidebarProfile(currentUser.name);
   byId("session-label").textContent =
     `${currentUser.name} · ${currentUser.role}`;
   byId("login").hidden = true;
@@ -431,10 +444,10 @@ function setAuthMode(mode) {
       if (forgot) byId("auth-password").placeholder = "New Password (5+ characters)";
     }
     if (btnTextNode)
-      btnTextNode.textContent = loginOtp ? "Send OTP" : "Send Code";
+      btnTextNode.textContent = loginOtp ? "Login" : "Send Code";
     if (byId("auth-title")) byId("auth-title").textContent = loginOtp ? "Login with OTP" : "Forgot Password?";
     if (byId("auth-subtitle"))
-      byId("auth-subtitle").textContent = loginOtp ? "We'll send a code to your email." : "Enter your email and we'll send a 5-digit verification code instantly.";
+      byId("auth-subtitle").textContent = loginOtp ? "Please enter your email and OTP to login." : "Enter your email and we'll send a 5-digit verification code instantly.";
   } else {
     if (byId("group-password")) byId("group-password").hidden = false;
     if (byId("auth-password")) {
@@ -476,9 +489,15 @@ function setAuthMode(mode) {
   if (byId("link-login-password")) byId("link-login-password").hidden = !loginOtp;
 
   // Reset OTP step
-  isOtpStep = false;
-  if (byId("group-otp")) byId("group-otp").hidden = true;
-  if (byId("auth-otp")) byId("auth-otp").required = false;
+  if (loginOtp) {
+    isOtpStep = true;
+    if (byId("group-otp")) byId("group-otp").hidden = false;
+    if (byId("auth-otp")) byId("auth-otp").required = true;
+  } else {
+    isOtpStep = false;
+    if (byId("group-otp")) byId("group-otp").hidden = true;
+    if (byId("auth-otp")) byId("auth-otp").required = false;
+  }
 
   if (byId("auth-message")) byId("auth-message").textContent = "";
 }
@@ -530,7 +549,15 @@ byId("auth-form").addEventListener("submit", async (event) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const result = await response.json();
+      
+      let result;
+      const textResponse = await response.text();
+      try {
+        result = JSON.parse(textResponse);
+      } catch (e) {
+        throw new Error(`Server error: ${response.status} - ${textResponse.slice(0, 30)}...`);
+      }
+      
       if (!response.ok)
         throw new Error(result.detail || "OTP verification failed");
 
@@ -570,7 +597,6 @@ byId("auth-form").addEventListener("submit", async (event) => {
   let endpoint = "/auth/login";
   if (registering) endpoint = "/auth/register";
   if (forgot) endpoint = "/auth/forgot-password";
-  if (loginOtp) endpoint = "/auth/request-otp";
 
   byId("auth-message").textContent = "Connecting...";
   try {
@@ -579,7 +605,15 @@ byId("auth-form").addEventListener("submit", async (event) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    const result = await response.json();
+    
+    let result;
+    const textResponse = await response.text();
+    try {
+      result = JSON.parse(textResponse);
+    } catch (e) {
+      throw new Error(`Server error: ${response.status} - ${textResponse.slice(0, 30)}...`);
+    }
+    
     if (!response.ok) {
       let errorMessage = "Authentication failed";
       if (result.detail) {
@@ -773,5 +807,55 @@ if (togglePassword && passwordInput) {
     passwordInput.setAttribute('type', type);
     this.classList.toggle('fa-eye');
     this.classList.toggle('fa-eye-slash');
+  });
+}
+
+// Send OTP Button Logic
+if (byId("btn-send-otp")) {
+  byId("btn-send-otp").addEventListener("click", async () => {
+    const email = byId("auth-email").value;
+    if (!email || !email.toLowerCase().endsWith("@gmail.com")) {
+      byId("auth-message").textContent = "Please enter a valid @gmail.com address first.";
+      return;
+    }
+    
+    byId("auth-message").textContent = "Sending OTP...";
+    byId("btn-send-otp").disabled = true;
+    try {
+      const response = await fetch(`${API_URL}/auth/request-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      
+      let result;
+      const textResponse = await response.text();
+      try {
+        result = JSON.parse(textResponse);
+      } catch (e) {
+        throw new Error(`Server error: ${response.status} - ${textResponse.slice(0, 30)}...`);
+      }
+      
+      if (!response.ok) throw new Error(result.detail || "Failed to send OTP");
+      
+      byId("auth-message").textContent = "OTP sent to your email. Please verify.";
+      
+      // Cooldown timer
+      let countdown = 60;
+      const interval = setInterval(() => {
+        countdown--;
+        byId("btn-send-otp").textContent = `Resend (${countdown}s)`;
+        if (countdown <= 0) {
+          clearInterval(interval);
+          byId("btn-send-otp").textContent = "Send OTP";
+          byId("btn-send-otp").disabled = false;
+        }
+      }, 1000);
+      
+    } catch (error) {
+      byId("auth-message").textContent = error.message;
+      byId("btn-send-otp").disabled = false;
+      byId("btn-send-otp").textContent = "Send OTP";
+    }
   });
 }
