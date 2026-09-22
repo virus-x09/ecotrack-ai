@@ -1,7 +1,7 @@
 const hostname = window.location.hostname;
-const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.');
+const isLocal = !hostname || hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.');
 // In Vercel, the API is available at the same domain under /api
-const API_URL = isLocal ? `http://${hostname}:8000` : "/api";
+const API_URL = isLocal ? `http://${hostname || 'localhost'}:8000` : "/api";
 let reports = [];
 let accessToken = localStorage.getItem("ecotrack_token");
 let currentUser = null;
@@ -400,6 +400,11 @@ async function restoreSession() {
   byId("logout").hidden = false;
   byId("login-screen").hidden = true;
   
+  if (currentUser.role === "administrator") {
+    window.location.href = "admin/index.html";
+    return;
+  }
+
   if (currentUser.role === "collector") {
     byId("app-wrapper").hidden = true;
     const colDash = document.getElementById("collector-dashboard-wrapper");

@@ -22,7 +22,8 @@ def init_db() -> None:
                     email TEXT UNIQUE NOT NULL,
                     role TEXT NOT NULL,
                     password_hash TEXT NOT NULL,
-                    created_at TEXT NOT NULL
+                    created_at TEXT NOT NULL,
+                    points INTEGER DEFAULT 0
                 )
                 """
             )
@@ -99,9 +100,14 @@ def find_user_by_id(user_id: str) -> dict[str, Any] | None:
 def load_users() -> list[dict[str, Any]]:
     with connect() as connection:
         cursor = connection.cursor()
-        cursor.execute("SELECT user_id, name, email, role FROM users")
-        rows = cursor.fetchall()
-    return [dict(row) for row in rows]
+        cursor.execute("SELECT user_id, name, email, role, points FROM users")
+        return [dict(row) for row in cursor.fetchall()]
+
+def add_user_points(user_id: str, points: int) -> None:
+    with connect() as connection:
+        cursor = connection.cursor()
+        cursor.execute("UPDATE users SET points = points + ? WHERE user_id = ?", (points, user_id))
+        connection.commit()
 
 def load_reports() -> dict[str, Any]:
     from .main import Report

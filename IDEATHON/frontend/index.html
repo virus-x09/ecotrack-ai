@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EcoTrack AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="auth.css?v=2">
+  <link rel="stylesheet" href="location.css?v=2">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+</head>
+<body>
+  <div id="login-screen" class="login-screen intro-mode">
+    <div class="login-container">
+      <div class="login-left">
+        <img src="avatar.png" alt="3D Avatar" class="avatar-image">
+      </div>
+      <div class="login-right">
+        <div class="auth-header-wrapper">
+          <h2 id="auth-title">Welcome back</h2>
+          <p id="auth-subtitle">Sign in to continue</p>
+        </div>
+        
+        <form id="auth-form" class="auth-form">
+          <input type="hidden" id="auth-mode" value="login">
+          
+          <div class="input-group" id="group-name" hidden>
+            <input id="auth-name" type="text" placeholder="Your name" autocomplete="name" required>
+          </div>
+          
+          <div class="input-group" id="group-email">
+            <input id="auth-email" type="email" placeholder="Email address" autocomplete="email" required>
+          </div>
+          
+          <div class="input-group" id="group-password">
+            <input id="auth-password" type="password" placeholder="Password (5+ characters)" autocomplete="new-password" minlength="5" required>
+            <div id="password-rules" class="password-rules" style="font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 4px;" hidden>
+              Requires 12+ chars, mix of upper/lower, numbers, and symbols (!@#$*). Avoid personal data or simple swaps.
+            </div>
+          </div>
+          
+          <div class="input-group" id="group-otp" hidden>
+            <input id="auth-otp" type="text" placeholder="Enter 6-digit OTP" minlength="6" maxlength="6" autocomplete="one-time-code">
+          </div>
+
+          <button id="auth-submit-btn" class="primary-button green-button" type="submit">Send OTP</button>
+          
+          <p class="form-message" id="auth-message" role="status"></p>
+          
+          <div class="auth-links">
+            <a href="#" id="link-login">Already have an account? Sign in</a>
+            <a href="#" id="link-register" hidden>Need an account? Register now</a>
+            <a href="#" id="link-forgot">Forgot password?</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-wrapper" hidden>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="EcoTrack AI home"><span class="brand-mark">E</span><span>EcoTrack <em>AI</em></span></a>
+      <div class="session"><span id="session-label">Not signed in</span><button id="logout" class="logout-button" type="button" hidden>Sign out</button></div>
+    </header>
+
+    <main id="top" class="shell">
+      <section class="intro">
+      <div>
+        <p class="eyebrow">Plastic waste intelligence</p>
+        <h1>Cleaner streets start with better signals.</h1>
+        <p class="lede">Turn community reports into visible, verifiable collection work.</p>
+      </div>
+      <button class="primary-button" id="focus-report" type="button">+ Report waste</button>
+    </section>
+
+    <section class="metric-grid" aria-label="Report analytics">
+      <article class="metric"><span>Total reports</span><strong id="total-reports">-</strong><small>all submitted reports</small></article>
+      <article class="metric metric-accent"><span>Pending action</span><strong id="pending-reports">-</strong><small>awaiting collection or review</small></article>
+      <article class="metric"><span>Collected</span><strong id="collected-reports">-</strong><small>collected or verified</small></article>
+      <article class="metric"><span>Verified rate</span><strong id="verified-rate">-</strong><small>of total reports</small></article>
+    </section>
+
+    <section class="workspace-grid">
+      <article class="panel report-panel" id="report-panel">
+        <div class="panel-heading"><div><p class="eyebrow">Citizen intake</p><h2>Report plastic waste</h2></div><span class="live-dot">Live</span></div>
+        <form id="report-form">
+          <label class="upload-box" for="image"><span class="upload-icon">↑</span><span><b id="file-label">Choose a photo</b><small>JPEG, PNG or WebP</small></span><input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+          <div class="form-row" id="report-location-fields"><label>Latitude<input id="latitude" name="latitude" type="number" step="any" min="-90" max="90" placeholder="Waiting for GPS" readonly required></label><label>Longitude<input id="longitude" name="longitude" type="number" step="any" min="-180" max="180" placeholder="Waiting for GPS" readonly required></label></div>
+          <label>Description <textarea name="description" rows="3" maxlength="1000" placeholder="Add a useful detail about the location or waste..."></textarea></label>
+          <p class="form-message" id="form-message" role="status"></p>
+          <button class="primary-button full" type="submit">Submit report <span>→</span></button>
+        </form>
+      </article>
+
+      <article class="panel map-panel">
+        <div class="panel-heading"><div><p class="eyebrow">Campus intelligence</p><h2>ITM GIDA Gorakhpur · Satellite</h2></div><div class="map-actions"><a class="view-360" href="https://www.google.com/maps/@26.7430558,83.2733427,85m/data=!3m1!1e3?entry=ttu&g_ep=EgoyMDI2MDgxOS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener">360 view ↗</a><button class="icon-button" id="refresh" title="Reset satellite view" aria-label="Reset satellite view">↻</button></div></div>
+        <div id="map" class="map-surface" aria-label="Satellite map of ITM GIDA campus"></div>
+        <div class="map-footer"><span><i class="legend-dot"></i> Waste reports <i class="student-dot"></i> Student GPS</span><span id="map-count">0 visible</span></div>
+        <div class="map-location" id="location-panel">
+          <div class="panel-heading"><div><p class="eyebrow">Current position</p><h3>Your location</h3></div><span class="live-dot">Live</span></div>
+          <div class="location-details">
+            <span id="location-status">Location permission needed</span>
+            <div class="location-coordinates"><span>Latitude <strong id="location-latitude">--</strong></span><span>Longitude <strong id="location-longitude">--</strong></span></div>
+            <div class="location-actions"><button class="location-button" id="locate" type="button">Use GPS</button><button class="location-button" id="network-locate" type="button">Use network</button></div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section id="reports-panel" class="panel reports-panel">
+      <div class="panel-heading reports-heading"><div><p class="eyebrow">Operations queue</p><h2>Waste reports</h2></div><div class="filters"><input id="search" type="search" placeholder="Search ID or category" aria-label="Search reports"><select id="status-filter" aria-label="Filter by status"><option value="">All statuses</option><option value="reported">Reported</option><option value="ai_analyzed">AI analyzed</option><option value="assigned">Assigned</option><option value="in_progress">In progress</option><option value="collected">Collected</option><option value="verified">Verified</option><option value="rejected">Rejected</option></select></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Report</th><th>Category</th><th>Location</th><th>Submitted</th><th>Status</th><th>Action</th></tr></thead><tbody id="reports-body"><tr><td colspan="6" class="empty">Loading reports...</td></tr></tbody></table></div>
+    </section>
+  </main>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="app.js?v=4"></script>
+</body>
+</html>

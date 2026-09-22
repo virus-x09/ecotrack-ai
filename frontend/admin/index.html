@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Dashboard | EcoTrack AI</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- Full Screen Loader -->
+  <div id="loader" class="loader-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="dashboard-layout" id="dashboard-layout" style="display: none;">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <i class="fa-solid fa-leaf text-primary"></i>
+        <span>EcoTrack<span class="text-primary">AI</span></span>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-tab="dashboard">
+          <i class="fa-solid fa-chart-pie"></i> Dashboard
+        </a>
+        <a href="#" class="nav-item" data-tab="reports">
+          <i class="fa-solid fa-table-list"></i> Manage Reports
+        </a>
+        <a href="#" class="nav-item" data-tab="collectors">
+          <i class="fa-solid fa-users-gear"></i> Collection Teams
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="logout-btn" class="btn-logout">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <h2 class="page-title" id="page-title">Dashboard Overview</h2>
+        </div>
+        <div class="topbar-right">
+          <div class="notification-bell">
+            <i class="fa-regular fa-bell"></i>
+            <span class="badge">3</span>
+          </div>
+          <div class="admin-profile">
+            <div class="avatar">AD</div>
+            <div class="admin-info">
+              <span class="admin-name" id="admin-name">Loading...</span>
+              <span class="admin-role">System Administrator</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Scrollable Container -->
+      <div class="content-scroll">
+        
+        <!-- Tab: Dashboard -->
+        <div class="tab-content active" id="tab-dashboard">
+          <!-- Stats Cards -->
+          <div class="stats-grid">
+            <div class="stat-card glass-card">
+              <div class="stat-icon bg-blue"><i class="fa-solid fa-clipboard-list"></i></div>
+              <div class="stat-details">
+                <span class="stat-label">Total Reports</span>
+                <h3 class="stat-value" id="stat-total">0</h3>
+              </div>
+            </div>
+            <div class="stat-card glass-card">
+              <div class="stat-icon bg-orange"><i class="fa-solid fa-hourglass-half"></i></div>
+              <div class="stat-details">
+                <span class="stat-label">Pending Verification</span>
+                <h3 class="stat-value" id="stat-pending">0</h3>
+              </div>
+            </div>
+            <div class="stat-card glass-card">
+              <div class="stat-icon bg-green"><i class="fa-solid fa-check-double"></i></div>
+              <div class="stat-details">
+                <span class="stat-label">Collected Waste</span>
+                <h3 class="stat-value" id="stat-collected">0</h3>
+              </div>
+            </div>
+            <div class="stat-card glass-card">
+              <div class="stat-icon bg-purple"><i class="fa-solid fa-robot"></i></div>
+              <div class="stat-details">
+                <span class="stat-label">AI Detections</span>
+                <h3 class="stat-value" id="stat-ai">0</h3>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Section -->
+          <div class="charts-section">
+            <div class="chart-container glass-card">
+              <h4>Waste Categories Distribution</h4>
+              <div class="canvas-wrapper">
+                <canvas id="categoryChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-container glass-card">
+              <h4>Recent Reports (Live)</h4>
+              <div class="recent-list" id="recent-list">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Reports -->
+        <div class="tab-content" id="tab-reports">
+          <div class="table-card glass-card">
+            <div class="table-header">
+              <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="report-search" placeholder="Search by ID or Category...">
+              </div>
+              <div class="filter-box">
+                <select id="status-filter">
+                  <option value="all">All Statuses</option>
+                  <option value="reported">Reported</option>
+                  <option value="reviewed">Reviewed (Needs Assign)</option>
+                  <option value="assigned">Assigned</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="collected">Collected (Needs Verify)</option>
+                  <option value="verified">Verified</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="modern-table">
+                <thead>
+                  <tr>
+                    <th>Report ID</th>
+                    <th>Category</th>
+                    <th>Date</th>
+                    <th>AI Confidence</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="reports-tbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Collectors -->
+        <div class="tab-content" id="tab-collectors">
+          <div class="glass-card table-card">
+            <h3 style="margin-bottom: 20px;">Active Collection Teams</h3>
+            <div class="table-responsive">
+              <table class="modern-table">
+                <thead>
+                  <tr>
+                    <th>Collector Name</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="collectors-tbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Modals -->
+
+  <!-- 1. Review Report Modal -->
+  <div class="modal-overlay" id="modal-review">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Review Report</h3>
+        <button class="btn-close" onclick="closeModal('modal-review')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="image-preview" id="review-image"></div>
+        <p><strong>AI Category:</strong> <span id="review-cat"></span></p>
+        <p><strong>Confidence:</strong> <span id="review-conf"></span>%</p>
+        <p><strong>Description:</strong> <span id="review-desc"></span></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-outline" onclick="closeModal('modal-review')">Cancel</button>
+        <button class="btn-danger" id="btn-reject-report">Reject</button>
+        <button class="btn-primary" id="btn-approve-report">Approve (Mark Reviewed)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Assign Collector Modal -->
+  <div class="modal-overlay" id="modal-assign">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Assign Collection Team</h3>
+        <button class="btn-close" onclick="closeModal('modal-assign')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p>Select a collection team member to assign to this task.</p>
+        <div class="form-group">
+          <label>Available Collectors</label>
+          <select id="collector-select" class="modern-select"></select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-outline" onclick="closeModal('modal-assign')">Cancel</button>
+        <button class="btn-primary" id="btn-confirm-assign">Confirm Assignment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Verify Evidence Modal -->
+  <div class="modal-overlay" id="modal-verify">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Verify Collection Evidence</h3>
+        <button class="btn-close" onclick="closeModal('modal-verify')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p>Review the collector's evidence photo to verify the job is complete.</p>
+        <div class="evidence-comparison">
+          <div class="evidence-box">
+            <span>Before</span>
+            <div class="image-preview" id="verify-before"></div>
+          </div>
+          <div class="evidence-box">
+            <span>After (Evidence)</span>
+            <div class="image-preview" id="verify-after"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-danger" id="btn-reject-evidence">Reject Proof</button>
+        <button class="btn-success" id="btn-approve-evidence">Verify Complete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
