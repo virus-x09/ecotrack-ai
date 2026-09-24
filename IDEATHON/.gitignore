@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.db
+mingit/
+mingit.zip
+.env
+uploads/
